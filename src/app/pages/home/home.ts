@@ -16,6 +16,7 @@ import { Contact } from '../../home/contact/contact';
 import { Footer } from '../../home/footer/footer';
 import { AppDownload } from '../../home/app-download/app-download';
 import { Location } from '../../home/location/location';
+import { FloatingButtons } from '../../shared/floating-buttons/floating-buttons';
 
 @Component({
   selector: 'app-home',
@@ -36,6 +37,7 @@ import { Location } from '../../home/location/location';
     Contact,
     Location,
     Footer,
+    FloatingButtons
   ],
   templateUrl: './home.html',
   styleUrl: './home.css',
