@@ -25,7 +25,7 @@ import { FloatingButtons } from '../../shared/floating-buttons/floating-buttons'
     Topbar,
     Navbar,
     Hero,
-    WhyChooseComponent,
+    // WhyChooseComponent,
     Services,
     FeaturedFleet,
     Airport,
