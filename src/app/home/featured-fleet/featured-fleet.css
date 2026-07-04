@@ -1,0 +1,190 @@
+/*=========================================
+FEATURED FLEET
+=========================================*/
+
+.fleet-section{
+    padding:100px 0;
+    background:#ffffff;
+}
+
+.fleet-card{
+
+    background:#fff;
+
+    border-radius:25px;
+
+    overflow:hidden;
+
+    border:1px solid #e5e7eb;
+
+    transition:.4s;
+
+    height:100%;
+
+}
+
+.fleet-card:hover{
+
+    transform:translateY(-12px);
+
+    box-shadow:0 20px 50px rgba(0,0,0,.15);
+
+}
+
+.fleet-card img{
+
+    width:100%;
+
+    height:240px;
+
+    object-fit:cover;
+
+}
+
+.fleet-body{
+
+    padding:30px;
+
+}
+
+.fleet-tag{
+
+    display:inline-block;
+
+    padding:6px 16px;
+
+    border-radius:30px;
+
+    background:#ffc107;
+
+    color:#111827;
+
+    font-weight:700;
+
+    margin-bottom:15px;
+
+}
+
+.fleet-tag.premium{
+
+    background:#0d6efd;
+
+    color:#fff;
+
+}
+
+.fleet-tag.luxury{
+
+    background:#111827;
+
+    color:#fff;
+
+}
+
+.fleet-body h3{
+
+    font-size:28px;
+
+    font-weight:700;
+
+    margin-bottom:20px;
+
+}
+
+.fleet-specs{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:12px;
+
+    margin-bottom:25px;
+
+}
+
+.fleet-specs span{
+
+    background:#f8fafc;
+
+    padding:12px;
+
+    border-radius:12px;
+
+    font-size:15px;
+
+}
+
+.fleet-specs i{
+
+    color:#ffc107;
+
+    margin-right:8px;
+
+}
+
+.fleet-price{
+
+    margin-bottom:25px;
+
+}
+
+.fleet-price h4{
+
+    font-size:34px;
+
+    color:#111827;
+
+    font-weight:800;
+
+}
+
+.fleet-price small{
+
+    font-size:18px;
+
+    color:#6b7280;
+
+}
+
+.fleet-buttons{
+
+    display:flex;
+
+    gap:12px;
+
+}
+
+.fleet-buttons .btn{
+
+    flex:1;
+
+    border-radius:40px;
+
+    font-weight:600;
+
+    padding:12px;
+
+}
+
+@media(max-width:768px){
+
+.fleet-section{
+
+padding:70px 0;
+
+}
+
+.fleet-specs{
+
+grid-template-columns:1fr;
+
+}
+
+.fleet-buttons{
+
+flex-direction:column;
+
+}
+
+}

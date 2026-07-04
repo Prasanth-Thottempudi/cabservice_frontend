@@ -1,0 +1,95 @@
+/*=========================================
+FAQ SECTION
+=========================================*/
+
+.faq-section{
+
+    padding:100px 0;
+
+    background:#f8fafc;
+
+}
+
+.faq-section .accordion-item{
+
+    border:none;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    margin-bottom:18px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+}
+
+.faq-section .accordion-button{
+
+    padding:22px 28px;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    background:#fff;
+
+    box-shadow:none;
+
+}
+
+.faq-section .accordion-button:not(.collapsed){
+
+    background:#111827;
+
+    color:#fff;
+
+}
+
+.faq-section .accordion-button:focus{
+
+    box-shadow:none;
+
+}
+
+.faq-section .accordion-body{
+
+    padding:25px 28px;
+
+    color:#6b7280;
+
+    line-height:1.8;
+
+    background:#fff;
+
+}
+
+.accordion-button::after{
+
+    filter:brightness(0);
+
+}
+
+.accordion-button:not(.collapsed)::after{
+
+    filter:brightness(0) invert(1);
+
+}
+
+@media(max-width:768px){
+
+.faq-section{
+
+padding:70px 0;
+
+}
+
+.faq-section .accordion-button{
+
+font-size:16px;
+
+padding:18px;
+
+}
+
+}

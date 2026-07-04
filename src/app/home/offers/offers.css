@@ -1,0 +1,209 @@
+/*=========================================
+OFFERS SECTION
+=========================================*/
+
+.offers-section{
+    padding:100px 0;
+    background:#f8fafc;
+}
+
+.offer-card{
+
+    background:#fff;
+
+    border-radius:25px;
+
+    padding:40px 35px;
+
+    text-align:center;
+
+    position:relative;
+
+    border:1px solid #e5e7eb;
+
+    transition:.4s;
+
+    overflow:hidden;
+
+    height:100%;
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.offer-card:hover{
+
+    transform:translateY(-12px);
+
+    box-shadow:0 20px 50px rgba(0,0,0,.12);
+
+}
+
+.offer-badge{
+
+    position:absolute;
+
+    top:20px;
+
+    right:20px;
+
+    background:#ffc107;
+
+    color:#111827;
+
+    padding:8px 18px;
+
+    border-radius:30px;
+
+    font-size:13px;
+
+    font-weight:700;
+
+}
+
+.offer-badge.blue{
+
+    background:#0d6efd;
+
+    color:#fff;
+
+}
+
+.offer-badge.green{
+
+    background:#198754;
+
+    color:#fff;
+
+}
+
+.offer-icon{
+
+    width:90px;
+
+    height:90px;
+
+    margin:20px auto 25px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:linear-gradient(135deg,#ffc107,#ff9800);
+
+}
+
+.offer-icon i{
+
+    font-size:38px;
+
+    color:#fff;
+
+}
+
+.offer-card h3{
+
+    font-size:28px;
+
+    font-weight:700;
+
+    margin-bottom:15px;
+
+    color:#111827;
+
+}
+
+.offer-card p{
+
+    color:#6b7280;
+
+    line-height:1.8;
+
+    margin-bottom:25px;
+
+    flex-grow:1;
+}
+
+.coupon{
+
+    background:#f4f4f4;
+
+    border:2px dashed #ffc107;
+
+    border-radius:15px;
+
+    padding:15px;
+
+    font-size:24px;
+
+    font-weight:800;
+
+    letter-spacing:2px;
+
+    color:#111827;
+
+    margin-top:auto;
+
+}
+
+.offer-card .btn{
+
+    margin-top:20px !important;
+
+    border-radius:40px;
+
+    font-weight:700;
+
+    padding:14px;
+
+    min-height:56px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+@media(max-width:768px){
+
+    .offers-section{
+
+        padding:70px 0;
+
+    }
+
+    .offer-card{
+
+        padding:30px;
+
+    }
+
+    .offer-icon{
+
+        width:75px;
+
+        height:75px;
+
+    }
+
+    .offer-icon i{
+
+        font-size:30px;
+
+    }
+
+    .coupon{
+
+        font-size:18px;
+
+    }
+
+}

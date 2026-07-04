@@ -1,0 +1,81 @@
+/*=========================================
+POPULAR ROUTES
+=========================================*/
+
+.routes-section{
+    padding:100px 0;
+    background:#f8fafc;
+}
+
+.route-card{
+    background:#fff;
+    border-radius:22px;
+    padding:35px;
+    border:1px solid #e5e7eb;
+    transition:.4s;
+    height:100%;
+}
+
+.route-card:hover{
+    transform:translateY(-10px);
+    box-shadow:0 20px 45px rgba(0,0,0,.12);
+}
+
+.route-card h4{
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:25px;
+    color:#111827;
+}
+
+.route-info{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:30px;
+    color:#6b7280;
+    font-weight:500;
+}
+
+.route-info span{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.route-info i{
+    color:#ffc107;
+}
+
+.route-price{
+    background:#f8fafc;
+    padding:20px;
+    border-radius:15px;
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.route-price h3{
+    margin-top:10px;
+    color:#111827;
+    font-size:34px;
+    font-weight:800;
+}
+
+.route-card .btn{
+    border-radius:40px;
+    height:50px;
+    font-weight:700;
+}
+
+@media(max-width:768px){
+
+.routes-section{
+    padding:70px 0;
+}
+
+.route-info{
+    flex-direction:column;
+    gap:10px;
+}
+
+}
