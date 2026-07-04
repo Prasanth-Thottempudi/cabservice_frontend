@@ -1,0 +1,52 @@
+.top-bar{
+    background:#0f172a;
+    color:#fff;
+    font-size:14px;
+    padding:10px 0;
+}
+
+.left-top,
+.right-top{
+    display:flex;
+    align-items:center;
+}
+
+.left-top a{
+    color:#fff;
+    margin-right:25px;
+    text-decoration:none;
+}
+
+.left-top i{
+    color:#ffc107;
+    margin-right:6px;
+}
+
+.right-top{
+    justify-content:flex-end;
+}
+
+.right-top a{
+    color:#fff;
+    text-decoration:none;
+    margin-left:18px;
+    transition:.3s;
+}
+
+.right-top a:hover{
+    color:#ffc107;
+}
+
+.download-app{
+    background:#ffc107;
+    color:#000!important;
+    padding:8px 18px;
+    border-radius:30px;
+    font-weight:600;
+}
+
+@media(max-width:991px){
+    .top-bar{
+        display:none;
+    }
+}

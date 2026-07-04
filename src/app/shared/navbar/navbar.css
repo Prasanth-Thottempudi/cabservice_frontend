@@ -1,0 +1,55 @@
+.navbar{
+    top:42px;
+    background:rgba(0,0,0,.45);
+    backdrop-filter:blur(18px);
+    transition:.4s;
+    z-index:999;
+}
+
+.navbar.scrolled{
+    top:0;
+    background:#111827;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+
+.navbar-brand{
+    display:flex;
+    align-items:center;
+    color:#fff!important;
+    font-size:24px;
+    font-weight:700;
+}
+
+.navbar-brand img{
+    margin-right:10px;
+}
+
+.nav-link{
+    color:#fff!important;
+    margin-left:15px;
+    font-weight:500;
+    transition:.3s;
+}
+
+.nav-link:hover{
+    color:#ffc107!important;
+}
+
+.book-btn{
+    margin-left:20px;
+    border-radius:30px;
+    background:#ffc107;
+    color:#000;
+    font-weight:700;
+    padding:10px 26px;
+}
+
+.book-btn:hover{
+    background:#ffca2c;
+}
+
+@media(max-width:991px){
+    .navbar{
+        top:0;
+    }
+}
