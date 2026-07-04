@@ -2,11 +2,12 @@ import { Component } from '@angular/core';
 import { Topbar } from '../../shared/topbar/topbar';
 import { Navbar } from '../../shared/navbar/navbar';
 import { Hero } from '../../home/hero/hero';
+import { WhyChooseComponent } from '../../home/why-choose/why-choose';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [Topbar, Navbar, Hero],
+  imports: [Topbar, Navbar, Hero, WhyChooseComponent],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
