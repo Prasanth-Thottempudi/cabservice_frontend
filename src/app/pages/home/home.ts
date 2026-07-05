@@ -17,6 +17,7 @@ import { Footer } from '../../home/footer/footer';
 import { AppDownload } from '../../home/app-download/app-download';
 import { Location } from '../../home/location/location';
 import { FloatingButtons } from '../../shared/floating-buttons/floating-buttons';
+import { Booking } from '../../home/booking/booking';
 
 @Component({
   selector: 'app-home',
@@ -25,6 +26,7 @@ import { FloatingButtons } from '../../shared/floating-buttons/floating-buttons'
     Topbar,
     Navbar,
     Hero,
+    Booking,
     // WhyChooseComponent,
     Services,
     FeaturedFleet,

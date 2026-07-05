@@ -1,0 +1,202 @@
+<section class="booking-section">
+
+  <div class="booking-header">
+    <span class="booking-tag">BOOK NOW</span>
+    <h2>Book Your Perfect Ride</h2>
+    <p>
+      Experience premium, reliable and affordable cab services with Nova Cab.
+      Select your trip details and choose the perfect vehicle.
+    </p>
+  </div>
+
+  <div class="booking-container">
+
+    <!-- LEFT SIDE -->
+    <div class="booking-form-card">
+
+      <h3>Trip Details</h3>
+
+      <div class="input-group">
+        <label>Pickup Location</label>
+        <div class="input-icon">
+          <i class="fas fa-map-marker-alt"></i>
+          <input
+            type="text"
+            placeholder="Enter Pickup Location"
+            [(ngModel)]="pickup">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Destination</label>
+        <div class="input-icon">
+          <i class="fas fa-location-dot"></i>
+          <input
+            type="text"
+            placeholder="Enter Destination"
+            [(ngModel)]="destination">
+        </div>
+      </div>
+
+      <div class="row">
+
+        <div class="input-group">
+          <label>Date</label>
+          <input type="date">
+        </div>
+
+        <div class="input-group">
+          <label>Time</label>
+          <input type="time">
+        </div>
+
+      </div>
+
+      <div class="row">
+
+        <div class="input-group">
+
+          <label>Passengers</label>
+
+          <select>
+            <option>1 Passenger</option>
+            <option>2 Passengers</option>
+            <option>3 Passengers</option>
+            <option>4 Passengers</option>
+            <option>5+ Passengers</option>
+          </select>
+
+        </div>
+
+        <div class="input-group">
+
+          <label>Trip Type</label>
+
+          <select [(ngModel)]="tripType">
+
+            <option value="ONE_WAY">One Way</option>
+
+            <option value="ROUND_TRIP">Round Trip</option>
+
+            <option value="AIRPORT">Airport Transfer</option>
+
+            <option value="RENTAL">Rental</option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDE -->
+
+    <div class="fare-card">
+
+      <h3>Ride Summary</h3>
+
+      <div class="summary-item">
+        <span>Distance</span>
+        <strong>28 KM</strong>
+      </div>
+
+      <div class="summary-item">
+        <span>Estimated Time</span>
+        <strong>42 mins</strong>
+      </div>
+
+      <div class="summary-item">
+        <span>Base Fare</span>
+        <strong>₹150</strong>
+      </div>
+
+      <div class="summary-item">
+        <span>Estimated Fare</span>
+        <strong class="fare">₹520</strong>
+      </div>
+
+      <button class="book-btn">
+        Book Your Ride
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- VEHICLES -->
+
+  <div class="vehicle-section">
+
+    <h2>Select Your Vehicle</h2>
+
+    <div class="vehicle-grid">
+
+      <div
+        class="vehicle-card"
+        *ngFor="let vehicle of vehicles"
+        (click)="selectVehicle(vehicle)"
+        [class.active]="selectedVehicle?.id===vehicle.id">
+
+        <div class="vehicle-image">
+
+          <img [src]="vehicle.image" [alt]="vehicle.name">
+
+        </div>
+
+        <div class="vehicle-content">
+
+          <h3>{{vehicle.name}}</h3>
+
+          <p>
+
+            <i class="fas fa-user"></i>
+
+            {{vehicle.capacity}} Seats
+
+          </p>
+
+          <p>
+
+            <i class="fas fa-suitcase"></i>
+
+            2 Luggage
+
+          </p>
+
+          <p>
+
+            <i class="fas fa-snowflake"></i>
+
+            Air Conditioned
+
+          </p>
+
+          <div class="vehicle-price">
+
+            ₹{{vehicle.pricePerKm}} / KM
+
+          </div>
+
+          <button class="select-btn">
+
+            {{selectedVehicle?.id===vehicle.id ? 'Selected' : 'Select Vehicle'}}
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+  <div class="map-section">
+
+    <h2>Trip Route</h2>
+
+    <div id="bookingMap"></div>
+
+</div>
+
+</section>
