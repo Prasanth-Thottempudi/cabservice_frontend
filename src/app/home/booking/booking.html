@@ -54,6 +54,9 @@
             (click)="selectPickupLocation(location)"
             [class.active]="pickupActiveIndex === i"
           >
+            <div class="search-loader" *ngIf="pickupLoading">
+              <i class="fas fa-spinner fa-spin"></i>
+            </div>
             <i class="fas fa-location-dot"></i>
 
             <div class="suggestion-content">
@@ -105,6 +108,9 @@
             (click)="selectDestinationLocation(location)"
             (mouseenter)="destinationActiveIndex = i"
           >
+            <div class="search-loader" *ngIf="destinationLoading">
+              <i class="fas fa-spinner fa-spin"></i>
+            </div>
             <strong>{{ location.placeName }}</strong>
             <span>{{ location.address }}</span>
           </button>
