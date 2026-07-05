@@ -1,202 +1,266 @@
 <section class="booking-section">
-
   <div class="booking-header">
     <span class="booking-tag">BOOK NOW</span>
     <h2>Book Your Perfect Ride</h2>
     <p>
-      Experience premium, reliable and affordable cab services with Nova Cab.
-      Select your trip details and choose the perfect vehicle.
+      Experience premium, reliable and affordable cab services with Nova Cab. Select your trip
+      details and choose the perfect vehicle.
     </p>
   </div>
 
   <div class="booking-container">
-
-    <!-- LEFT SIDE -->
     <div class="booking-form-card">
-
       <h3>Trip Details</h3>
 
-      <div class="input-group">
+      <div class="input-group autocomplete-container" #pickupContainer>
         <label>Pickup Location</label>
         <div class="input-icon">
           <i class="fas fa-map-marker-alt"></i>
           <input
             type="text"
+            name="pickup"
             placeholder="Enter Pickup Location"
-            [(ngModel)]="pickup">
+            [(ngModel)]="pickupQuery"
+            (ngModelChange)="onPickupInput($event)"
+            (focus)="onPickupFocus()"
+            (keydown)="onPickupKeydown($event)"
+            autocomplete="off"
+          />
         </div>
+        <div class="loader" *ngIf="pickupLoading"></div>
+
+        <div class="suggestions-dropdown" *ngIf="showPickupSuggestions">
+          <div class="loading-row" *ngIf="pickupLoading">
+            <span class="spinner"></span>
+            <span>Searching locations...</span>
+          </div>
+
+          <!-- <button
+            *ngFor="let location of pickupSuggestions; let i = index"
+            type="button"
+            class="suggestion-item"
+            [class.active]="i === pickupActiveIndex"
+            (click)="selectPickupLocation(location)"
+            (mouseenter)="pickupActiveIndex = i"
+          >
+            <strong>{{ location.placeName }}</strong>
+            <span>{{ location.address }}</span>
+          </button> -->
+
+          <button
+            *ngFor="let location of pickupSuggestions; let i = index"
+            class="suggestion-item"
+            type="button"
+            (click)="selectPickupLocation(location)"
+            [class.active]="pickupActiveIndex === i"
+          >
+            <i class="fas fa-location-dot"></i>
+
+            <div class="suggestion-content">
+              <div class="suggestion-title">
+                {{ location.placeName }}
+              </div>
+
+              <div class="suggestion-address">
+                {{ location.address }}
+              </div>
+            </div>
+          </button>
+
+          <div class="no-results" *ngIf="!pickupLoading && pickupSuggestions.length === 0">
+            No locations found. Try a different address.
+          </div>
+        </div>
+
+        <p class="field-error" *ngIf="errors.pickup">{{ errors.pickup }}</p>
       </div>
 
-      <div class="input-group">
+      <div class="input-group autocomplete-container" #destinationContainer>
         <label>Destination</label>
         <div class="input-icon">
           <i class="fas fa-location-dot"></i>
           <input
             type="text"
+            name="destination"
             placeholder="Enter Destination"
-            [(ngModel)]="destination">
+            [(ngModel)]="destinationQuery"
+            (ngModelChange)="onDestinationInput($event)"
+            (focus)="onDestinationFocus()"
+            (keydown)="onDestinationKeydown($event)"
+            autocomplete="off"
+          />
         </div>
+
+        <div class="suggestions-dropdown" *ngIf="showDestinationSuggestions">
+          <div class="loading-row" *ngIf="destinationLoading">
+            <span class="spinner"></span>
+            <span>Searching locations...</span>
+          </div>
+
+          <button
+            *ngFor="let location of destinationSuggestions; let i = index"
+            type="button"
+            class="suggestion-item"
+            [class.active]="i === destinationActiveIndex"
+            (click)="selectDestinationLocation(location)"
+            (mouseenter)="destinationActiveIndex = i"
+          >
+            <strong>{{ location.placeName }}</strong>
+            <span>{{ location.address }}</span>
+          </button>
+
+          <div
+            class="no-results"
+            *ngIf="!destinationLoading && destinationSuggestions.length === 0"
+          >
+            No locations found. Try a different address.
+          </div>
+        </div>
+
+        <p class="field-error" *ngIf="errors.destination">{{ errors.destination }}</p>
       </div>
 
       <div class="row">
-
         <div class="input-group">
           <label>Date</label>
-          <input type="date">
+          <input type="date" name="travelDate" [(ngModel)]="travelDate" />
+          <p class="field-error" *ngIf="errors.travelDate">{{ errors.travelDate }}</p>
         </div>
 
         <div class="input-group">
           <label>Time</label>
-          <input type="time">
+          <input type="time" name="travelTime" [(ngModel)]="travelTime" />
+          <p class="field-error" *ngIf="errors.travelTime">{{ errors.travelTime }}</p>
         </div>
-
       </div>
 
       <div class="row">
-
         <div class="input-group">
-
           <label>Passengers</label>
-
-          <select>
-            <option>1 Passenger</option>
-            <option>2 Passengers</option>
-            <option>3 Passengers</option>
-            <option>4 Passengers</option>
-            <option>5+ Passengers</option>
+          <select name="passengers" [(ngModel)]="passengers">
+            <option [value]="1">1 Passenger</option>
+            <option [value]="2">2 Passengers</option>
+            <option [value]="3">3 Passengers</option>
+            <option [value]="4">4 Passengers</option>
+            <!-- <option [value]="5">5+ Passengers</option> -->
           </select>
-
+          <p class="field-error" *ngIf="errors.passengers">{{ errors.passengers }}</p>
         </div>
 
         <div class="input-group">
-
           <label>Trip Type</label>
 
-          <select [(ngModel)]="tripType">
+          <input type="text" value="Round Trip" readonly class="readonly-input" />
 
-            <option value="ONE_WAY">One Way</option>
-
-            <option value="ROUND_TRIP">Round Trip</option>
-
-            <option value="AIRPORT">Airport Transfer</option>
-
-            <option value="RENTAL">Rental</option>
-
-          </select>
-
+          <input type="hidden" [(ngModel)]="tripType" name="tripType" />
         </div>
-
       </div>
 
+      <div class="button-row">
+        <button class="book-btn" type="button" (click)="bookRide()" [disabled]="bookingLoading">
+          {{ bookingLoading ? 'Booking...' : 'Book Your Ride' }}
+        </button>
+      </div>
+
+      <div class="message success" *ngIf="bookingSuccessMessage">{{ bookingSuccessMessage }}</div>
+      <div class="message error" *ngIf="bookingErrorMessage">{{ bookingErrorMessage }}</div>
+      <div class="message error" *ngIf="errors.route">{{ errors.route }}</div>
     </div>
 
-    <!-- RIGHT SIDE -->
-
     <div class="fare-card">
-
       <h3>Ride Summary</h3>
+
+      <div class="summary-block">
+        <span class="summary-title">Pickup</span>
+        <p>{{ pickupSelected?.address || 'Not selected' }}</p>
+      </div>
+
+      <div class="summary-block">
+        <span class="summary-title">Destination</span>
+        <p>{{ destinationSelected?.address || 'Not selected' }}</p>
+      </div>
+
+      <div class="summary-item">
+        <span>Trip Type</span>
+        <strong>{{ tripType.replace('_', ' ') }}</strong>
+      </div>
+
+      <div class="summary-item">
+        <span>Vehicle</span>
+        <strong>{{ selectedVehicle?.name || 'None' }}</strong>
+      </div>
+
+      <div class="summary-item">
+        <span>Passengers</span>
+        <strong>{{ passengers }}</strong>
+      </div>
+
+      <div class="summary-item">
+        <span>Travel Date</span>
+        <strong>{{ travelDate || '-' }}</strong>
+      </div>
+
+      <div class="summary-item">
+        <span>Travel Time</span>
+        <strong>{{ travelTime || '-' }}</strong>
+      </div>
 
       <div class="summary-item">
         <span>Distance</span>
-        <strong>28 KM</strong>
+        <strong>{{ displayDistance * 2 || 0 }} KM</strong>
       </div>
 
       <div class="summary-item">
-        <span>Estimated Time</span>
-        <strong>42 mins</strong>
+        <span>Duration</span>
+        <strong>{{ formattedDuration }}</strong>
       </div>
 
       <div class="summary-item">
         <span>Base Fare</span>
-        <strong>₹150</strong>
+        <strong>₹{{ selectedVehicle?.baseFare ?? 0 }}</strong>
       </div>
 
       <div class="summary-item">
-        <span>Estimated Fare</span>
-        <strong class="fare">₹520</strong>
+        <span>Price Per KM</span>
+        <strong>₹{{ selectedVehicle?.pricePerKm ?? 0 }}</strong>
       </div>
 
-      <button class="book-btn">
-        Book Your Ride
-      </button>
+      <div class="summary-item fare-total">
+        <span>Estimated Fare</span>
+        <strong>₹{{ estimatedFare }}</strong>
+      </div>
 
+      <p class="fare-note" *ngIf="tripType === 'RENTAL'">
+        Rental fare uses a flat package placeholder based on base fare.
+      </p>
+
+      <p class="route-error" *ngIf="routeError">{{ routeError }}</p>
     </div>
-
   </div>
 
-  <!-- VEHICLES -->
-
   <div class="vehicle-section">
-
     <h2>Select Your Vehicle</h2>
-
     <div class="vehicle-grid">
-
       <div
         class="vehicle-card"
         *ngFor="let vehicle of vehicles"
         (click)="selectVehicle(vehicle)"
-        [class.active]="selectedVehicle?.id===vehicle.id">
-
+        [class.active]="selectedVehicle?.id === vehicle.id"
+      >
         <div class="vehicle-image">
-
-          <img [src]="vehicle.image" [alt]="vehicle.name">
-
+          <img [src]="vehicle.image" [alt]="vehicle.name" />
         </div>
-
         <div class="vehicle-content">
-
-          <h3>{{vehicle.name}}</h3>
-
-          <p>
-
-            <i class="fas fa-user"></i>
-
-            {{vehicle.capacity}} Seats
-
-          </p>
-
-          <p>
-
-            <i class="fas fa-suitcase"></i>
-
-            2 Luggage
-
-          </p>
-
-          <p>
-
-            <i class="fas fa-snowflake"></i>
-
-            Air Conditioned
-
-          </p>
-
-          <div class="vehicle-price">
-
-            ₹{{vehicle.pricePerKm}} / KM
-
-          </div>
-
-          <button class="select-btn">
-
-            {{selectedVehicle?.id===vehicle.id ? 'Selected' : 'Select Vehicle'}}
-
+          <h3>{{ vehicle.name }}</h3>
+          <p><i class="fas fa-user"></i> {{ vehicle.capacity }} Seats</p>
+          <p><i class="fas fa-suitcase"></i> 2 Luggage</p>
+          <p><i class="fas fa-snowflake"></i> Air Conditioned</p>
+          <div class="vehicle-price">₹{{ vehicle.pricePerKm }} / KM</div>
+          <button class="select-btn" type="button">
+            {{ selectedVehicle?.id === vehicle.id ? 'Selected' : 'Select Vehicle' }}
           </button>
-
         </div>
-
       </div>
-
     </div>
-
   </div>
-  <div class="map-section">
-
-    <h2>Trip Route</h2>
-
-    <div id="bookingMap"></div>
-
-</div>
-
 </section>

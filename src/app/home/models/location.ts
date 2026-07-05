@@ -1,9 +1,6 @@
 export interface Location {
-  name: string;
-
-  latitude: number;
-
-  longitude: number;
-
+  placeName: string;
   address: string;
+  latitude: number;
+  longitude: number;
 }

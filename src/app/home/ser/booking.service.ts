@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-
 import { HttpClient } from '@angular/common/http';
-
 import { Observable } from 'rxjs';
-import { Vehicle } from '../models/vehicle';
 
+import { BookingRequest } from '../models/booking-request';
+import { BookingResponse } from '../models/booking-response';
 
 @Injectable({
   providedIn: 'root',
@@ -14,7 +13,7 @@ export class BookingService {
 
   constructor(private http: HttpClient) {}
 
-  getVehicles(): Observable<Vehicle[]> {
-    return this.http.get<Vehicle[]>(`${this.baseUrl}/vehicles`);
+  bookRide(request: BookingRequest): Observable<BookingResponse> {
+    return this.http.post<BookingResponse>(`${this.baseUrl}/bookings`, request);
   }
 }

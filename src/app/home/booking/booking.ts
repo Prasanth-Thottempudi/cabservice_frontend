@@ -1,16 +1,28 @@
-import {
-  Component,
-  OnInit,
-  AfterViewInit,
-  inject,
-  PLATFORM_ID
-} from '@angular/core';
-
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  of,
+  Subject,
+  switchMap,
+  takeUntil,
+  tap,
+} from 'rxjs';
 
+import { Location } from '../models/location';
+import { RouteInfo } from '../models/route';
 import { Vehicle } from '../models/vehicle';
+import { BookingRequest } from '../models/booking-request';
+import { BookingResponse } from '../models/booking-response';
 import { BookingService } from '../ser/booking.service';
+import { LocationService } from '../ser/location.service';
+import { RouteService } from '../ser/route.service';
+import { VehicleService } from '../ser/vehicle.service';
 
 @Component({
   selector: 'app-booking',
@@ -19,270 +31,462 @@ import { BookingService } from '../ser/booking.service';
   templateUrl: './booking.html',
   styleUrl: './booking.css',
 })
-export class Booking implements OnInit, AfterViewInit {
-  private platformId = inject(PLATFORM_ID);
+export class Booking implements OnInit, OnDestroy {
+  @ViewChild('pickupContainer', { static: false }) pickupContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('destinationContainer', { static: false })
+  destinationContainer?: ElementRef<HTMLDivElement>;
 
-  private L: any;
+  pickupQuery = '';
+  destinationQuery = '';
 
-  private map: any;
+  pickupSuggestions: Location[] = [];
+  destinationSuggestions: Location[] = [];
 
-  private pickupMarker: any;
+  pickupLoading = false;
+  destinationLoading = false;
 
-  private destinationMarker: any;
+  showPickupSuggestions = false;
+  showDestinationSuggestions = false;
 
-  pickup = '';
+  pickupActiveIndex = -1;
+  destinationActiveIndex = -1;
 
-  destination = '';
+  pickupSelected: Location | null = null;
+  destinationSelected: Location | null = null;
 
-  
+  routeInfo: RouteInfo | null = null;
+  routeError = '';
 
-  tripType = 'ONE_WAY';
-
+  tripType = 'ROUND_TRIP';
   travelDate = '';
-
   travelTime = '';
-
   passengers = 1;
 
   vehicles: Vehicle[] = [];
-
-  selectedVehicle!: Vehicle;
-
-  distance = 0;
-
-  duration = 0;
+  selectedVehicle: Vehicle | null = null;
 
   baseFare = 0;
-
   estimatedFare = 0;
+  bookingLoading = false;
+  bookingSuccessMessage = '';
+  bookingErrorMessage = '';
 
-  loading = false;
+  errors = {
+    pickup: '',
+    destination: '',
+    travelDate: '',
+    travelTime: '',
+    passengers: '',
+    vehicle: '',
+    route: '',
+  };
+  private readonly pickupInput$ = new Subject<string>();
+  private readonly destinationInput$ = new Subject<string>();
+  private readonly destroy$ = new Subject<void>();
 
-  constructor(private bookingService: BookingService) {}
+  constructor(
+    private locationService: LocationService,
+    private routeService: RouteService,
+    private vehicleService: VehicleService,
+    private bookingService: BookingService,
+  ) {}
 
   ngOnInit(): void {
+    this.initializeSearchStreams();
     this.loadVehicles();
   }
 
-  async ngAfterViewInit(): Promise<void> {
-    if (!isPlatformBrowser(this.platformId)) {
+  private initializeSearchStreams(): void {
+    this.pickupInput$
+      .pipe(
+        map((query) => query.trim()),
+        tap((query) => {
+          if (query.length < 2) {
+            this.pickupSuggestions = [];
+            this.showPickupSuggestions = false;
+            this.pickupLoading = false;
+            this.pickupActiveIndex = -1;
+          }
+        }),
+        filter((query) => query.length >= 2),
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap(() => {
+          this.pickupLoading = true;
+          this.showPickupSuggestions = true;
+        }),
+        switchMap((query) =>
+          this.locationService.searchLocations(query).pipe(
+            catchError(() => {
+              this.pickupLoading = false;
+              return of([] as Location[]);
+            }),
+          ),
+        ),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: (results: Location[]) => {
+          this.pickupLoading = false;
+          this.pickupSuggestions = results;
+          this.pickupActiveIndex = results.length > 0 ? 0 : -1;
+        },
+      });
+
+    this.destinationInput$
+      .pipe(
+        map((query) => query.trim()),
+        tap((query) => {
+          if (query.length < 2) {
+            this.destinationSuggestions = [];
+            this.showDestinationSuggestions = false;
+            this.destinationLoading = false;
+            this.destinationActiveIndex = -1;
+          }
+        }),
+        filter((query) => query.length >= 2),
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap(() => {
+          this.destinationLoading = true;
+          this.showDestinationSuggestions = true;
+        }),
+        switchMap((query) =>
+          this.locationService.searchLocations(query).pipe(
+            catchError(() => {
+              this.destinationLoading = false;
+              return of([] as Location[]);
+            }),
+          ),
+        ),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: (results: Location[]) => {
+          this.destinationLoading = false;
+          this.destinationSuggestions = results;
+          this.destinationActiveIndex = results.length > 0 ? 0 : -1;
+        },
+      });
+  }
+
+  private loadVehicles(): void {
+    this.vehicleService
+      .getVehicles()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (vehicles: Vehicle[]) => {
+          this.vehicles = vehicles;
+          if (vehicles.length > 0) {
+            this.selectVehicle(vehicles[0]);
+          }
+        },
+        error: (error) => {
+          console.error('Failed to load vehicles', error);
+        },
+      });
+  }
+
+  onPickupInput(value: string): void {
+    this.pickupQuery = value;
+    this.pickupSelected = null;
+    this.pickupInput$.next(value);
+  }
+
+  onDestinationInput(value: string): void {
+    this.destinationQuery = value;
+    this.destinationSelected = null;
+    this.destinationInput$.next(value);
+  }
+
+  onPickupFocus(): void {
+    this.showPickupSuggestions = this.pickupSuggestions.length > 0;
+  }
+
+  onDestinationFocus(): void {
+    this.showDestinationSuggestions = this.destinationSuggestions.length > 0;
+  }
+
+  selectPickupLocation(location: Location): void {
+    console.log(location);
+    this.pickupSelected = location;
+    this.pickupQuery = location.address;
+    this.showPickupSuggestions = false;
+    this.pickupActiveIndex = -1;
+    this.updateRoute();
+  }
+  test(location: Location): void {
+    console.log('CLICK WORKING');
+    console.log(location);
+  }
+
+  selectDestinationLocation(location: Location): void {
+    this.destinationSelected = location;
+    this.destinationQuery = location.address;
+    this.showDestinationSuggestions = false;
+    this.destinationActiveIndex = -1;
+    this.updateRoute();
+  }
+
+  private updateRoute(): void {
+    this.routeError = '';
+
+    if (!this.pickupSelected || !this.destinationSelected) {
+      this.routeInfo = null;
+      this.estimatedFare = 0;
       return;
     }
 
-    this.L = await import('leaflet');
-
-    setTimeout(() => {
-      this.initializeMap();
-
-      this.loadDemoLocations();
-    });
-  }
-
-  // =============================
-  // MAP
-  // =============================
-
-  private initializeMap(): void {
-    const icon = this.L.icon({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-
-      iconSize: [25, 41],
-
-      iconAnchor: [12, 41],
-    });
-
-    this.L.Marker.prototype.options.icon = icon;
-
-    this.map = this.L.map('bookingMap', {
-      zoomControl: true,
-    }).setView([17.385044, 78.486671], 11);
-
-    this.L.tileLayer(
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-
-      {
-        maxZoom: 19,
-
-        attribution: '&copy; OpenStreetMap',
-      },
-    ).addTo(this.map);
-  }
-
-  loadDemoLocations(): void {
-    this.setPickupMarker(
-      17.4435,
-
-      78.3772,
-    );
-
-    this.setDestinationMarker(
-      17.2403,
-
-      78.4294,
-    );
-  }
-
-  setPickupMarker(lat: number, lng: number): void {
-    if (this.pickupMarker) {
-      this.map.removeLayer(this.pickupMarker);
-    }
-
-    this.pickupMarker = this.L.marker([lat, lng])
-
-      .addTo(this.map)
-
-      .bindPopup('Pickup')
-
-      .openPopup();
-
-    this.fitMap();
-  }
-
-  setDestinationMarker(lat: number, lng: number): void {
-    if (this.destinationMarker) {
-      this.map.removeLayer(this.destinationMarker);
-    }
-
-    this.destinationMarker = this.L.marker([lat, lng])
-
-      .addTo(this.map)
-
-      .bindPopup('Destination');
-
-    this.fitMap();
-  }
-
-  private fitMap(): void {
-    if (!this.pickupMarker || !this.destinationMarker) {
-      return;
-    }
-
-    const group = this.L.featureGroup([this.pickupMarker, this.destinationMarker]);
-
-    this.map.fitBounds(group.getBounds().pad(0.3));
-  }
-  // =============================
-  // VEHICLES
-  // =============================
-
-  loadVehicles(): void {
-    this.bookingService.getVehicles().subscribe({
-      next: (vehicles) => {
-        this.vehicles = vehicles;
-
-        if (vehicles.length > 0) {
-          this.selectVehicle(vehicles[0]);
-        }
-      },
-
-      error: (error) => {
-        console.error('Failed to load vehicles', error);
-      },
-    });
+    this.routeService
+      .calculateRoute(
+        this.pickupSelected.longitude,
+        this.pickupSelected.latitude,
+        this.destinationSelected.longitude,
+        this.destinationSelected.latitude,
+      )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (route: { distance: number; duration: number }) => {
+          this.routeInfo = {
+            distance: Number((route.distance / 1000).toFixed(1)),
+            duration: Math.ceil(route.duration / 60),
+          };
+          this.calculateFare();
+        },
+        error: () => {
+          this.routeInfo = null;
+          this.routeError = 'Unable to calculate route. Please verify locations and retry.';
+          this.estimatedFare = 0;
+        },
+      });
   }
 
   selectVehicle(vehicle: Vehicle): void {
     this.selectedVehicle = vehicle;
-
+    this.baseFare = vehicle.baseFare;
     this.calculateFare();
   }
 
-  // =============================
-  // FARE CALCULATION
-  // =============================
-
   calculateFare(): void {
-    if (!this.selectedVehicle) {
+    if (!this.selectedVehicle || !this.routeInfo) {
+      this.estimatedFare = 0;
       return;
     }
 
-    /*
-      Temporary values.
+    let distance = this.routeInfo.distance;
 
-      Next step:
-      Distance & Duration will come
-      from OSRM Route API.
-    */
+    if (this.tripType === 'ROUND_TRIP') {
+      distance *= 2;
+    }
 
-    this.distance = 28;
+    const distanceFare = distance * this.selectedVehicle.pricePerKm;
 
-    this.duration = 42;
+    this.estimatedFare = Math.round(this.selectedVehicle.baseFare + distanceFare);
 
-    this.baseFare = this.selectedVehicle.baseFare;
-
-    this.estimatedFare =
-      this.selectedVehicle.baseFare + this.distance * this.selectedVehicle.pricePerKm;
+    console.log('========== FARE ==========');
+    console.log('Route Info:', this.routeInfo);
+    console.log('Distance:', this.routeInfo?.distance);
+    console.log('Display Distance:', this.displayDistance);
+    console.log('Trip Type:', this.tripType);
+    console.log('Price/KM:', this.selectedVehicle?.pricePerKm);
+    console.log('Estimated:', this.estimatedFare);
   }
 
-  // =============================
-  // PASSENGERS
-  // =============================
+  onPickupKeydown(event: KeyboardEvent): void {
+    this.navigateSuggestionList(event, 'pickup');
+  }
 
-  increasePassengers(): void {
-    if (this.passengers < 8) {
-      this.passengers++;
+  onDestinationKeydown(event: KeyboardEvent): void {
+    this.navigateSuggestionList(event, 'destination');
+  }
+
+  private navigateSuggestionList(event: KeyboardEvent, type: 'pickup' | 'destination'): void {
+    const suggestions = type === 'pickup' ? this.pickupSuggestions : this.destinationSuggestions;
+    const activeIndex = type === 'pickup' ? this.pickupActiveIndex : this.destinationActiveIndex;
+
+    if (!suggestions.length) {
+      return;
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      const nextIndex = Math.min(activeIndex + 1, suggestions.length - 1);
+      if (type === 'pickup') {
+        this.pickupActiveIndex = nextIndex;
+      } else {
+        this.destinationActiveIndex = nextIndex;
+      }
+      return;
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      const previousIndex = Math.max(activeIndex - 1, 0);
+      if (type === 'pickup') {
+        this.pickupActiveIndex = previousIndex;
+      } else {
+        this.destinationActiveIndex = previousIndex;
+      }
+      return;
+    }
+
+    if (event.key === 'Enter' && activeIndex >= 0) {
+      event.preventDefault();
+      const selectedLocation = suggestions[activeIndex];
+      if (type === 'pickup') {
+        this.selectPickupLocation(selectedLocation);
+      } else {
+        this.selectDestinationLocation(selectedLocation);
+      }
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      this.closeSuggestions();
     }
   }
 
-  decreasePassengers(): void {
-    if (this.passengers > 1) {
-      this.passengers--;
-    }
+  // @HostListener('document:click', ['$event'])
+  // onDocumentClick(event: MouseEvent): void {
+  //   const target = event.target as Node;
+  //   const clickInsidePickup = this.pickupContainer?.nativeElement.contains(target);
+  //   const clickInsideDestination = this.destinationContainer?.nativeElement.contains(target);
+
+  //   if (!clickInsidePickup) {
+  //     this.showPickupSuggestions = false;
+  //   }
+
+  //   if (!clickInsideDestination) {
+  //     this.showDestinationSuggestions = false;
+  //   }
+  // }
+
+  private closeSuggestions(): void {
+    this.showPickupSuggestions = false;
+    this.showDestinationSuggestions = false;
   }
 
-  // =============================
-  // BOOKING
-  // =============================
+  get displayDistance(): number {
+    if (!this.routeInfo) {
+      return 0;
+    }
+
+    return this.tripType === 'ROUND_TRIP'
+      ? Number((this.routeInfo.distance * 2).toFixed(1))
+      : this.routeInfo.distance;
+  }
+
+  get displayDuration(): number {
+    if (!this.routeInfo) {
+      return 0;
+    }
+
+    return this.tripType === 'ROUND_TRIP' ? this.routeInfo.duration * 2 : this.routeInfo.duration;
+  }
 
   bookRide(): void {
-    if (!this.pickup.trim()) {
-      alert('Please enter pickup location.');
+    this.errors = {
+      pickup: '',
+      destination: '',
+      travelDate: '',
+      travelTime: '',
+      passengers: '',
+      vehicle: '',
+      route: '',
+    };
+    this.bookingSuccessMessage = '';
+    this.bookingErrorMessage = '';
 
-      return;
+    if (!this.pickupSelected) {
+      this.errors.pickup = 'Please select a pickup address from the list.';
     }
 
-    if (!this.destination.trim()) {
-      alert('Please enter destination.');
-
-      return;
+    if (!this.destinationSelected) {
+      this.errors.destination = 'Please select a destination address from the list.';
     }
 
     if (!this.selectedVehicle) {
-      alert('Please select a vehicle.');
+      this.errors.vehicle = 'Please select a vehicle.';
+    }
 
+    if (!this.travelDate) {
+      this.errors.travelDate = 'Please select a travel date.';
+    }
+
+    if (!this.travelTime) {
+      this.errors.travelTime = 'Please select a travel time.';
+    }
+
+    if (this.passengers < 1) {
+      this.errors.passengers = 'Please select the number of passengers.';
+    }
+
+    if (!this.routeInfo || this.displayDistance <= 0 || this.displayDuration <= 0) {
+      this.errors.route = 'Distance and duration must be calculated before booking.';
+    }
+
+    if (Object.keys(this.errors).length > 0) {
       return;
     }
 
-    const bookingRequest = {
-      pickup: this.pickup,
-
-      destination: this.destination,
-
-      tripType: this.tripType,
-
+    const bookingRequest: BookingRequest = {
+      pickupAddress: this.pickupSelected!.address,
+      pickupLatitude: this.pickupSelected!.latitude,
+      pickupLongitude: this.pickupSelected!.longitude,
+      destinationAddress: this.destinationSelected!.address,
+      destinationLatitude: this.destinationSelected!.latitude,
+      destinationLongitude: this.destinationSelected!.longitude,
       travelDate: this.travelDate,
-
       travelTime: this.travelTime,
-
-      passengers: this.passengers,
-
-      vehicleId: this.selectedVehicle.id,
-
-      vehicleName: this.selectedVehicle.name,
-
+      tripType: this.tripType,
+      vehicleId: this.selectedVehicle!.id,
+      vehicleName: this.selectedVehicle!.name,
+      distance: this.displayDistance,
+      duration: this.displayDuration,
       estimatedFare: this.estimatedFare,
-
-      distance: this.distance,
-
-      duration: this.duration,
+      passengers: this.passengers,
     };
 
-    console.log('Booking Request');
+    this.bookingLoading = true;
 
-    console.table(bookingRequest);
+    this.bookingService
+      .bookRide(bookingRequest)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: BookingResponse) => {
+          this.bookingLoading = false;
+          this.bookingSuccessMessage = response?.message ?? 'Booking Successful';
+        },
+        error: () => {
+          this.bookingLoading = false;
+          this.bookingErrorMessage = 'Unable to complete booking. Please try again later.';
+        },
+      });
+  }
 
-    alert('Booking request submitted successfully.');
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  get formattedDuration(): string {
+    const totalMinutes = this.displayDuration;
+
+    if (totalMinutes <= 0) {
+      return '-';
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours === 0) {
+      return `${minutes} mins`;
+    }
+
+    if (minutes === 0) {
+      return `${hours} hrs`;
+    }
+
+    return `${hours} hrs ${minutes} mins`;
   }
 }
