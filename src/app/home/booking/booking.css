@@ -1063,3 +1063,111 @@ transform:translateY(-50%) rotate(360deg);
     z-index:100;
 
 }
+
+/* ===============================
+TABLET
+===============================*/
+
+@media (max-width: 992px){
+
+    .booking-container{
+        grid-template-columns:1fr;
+    }
+
+    .fare-card{
+        position:static;
+        margin-top:30px;
+    }
+
+}
+
+/* ===============================
+MOBILE
+===============================*/
+
+@media (max-width:768px){
+
+    .booking-section{
+        padding:60px 20px;
+    }
+
+    .booking-header h2{
+        font-size:30px;
+    }
+
+    .booking-header p{
+        font-size:15px;
+    }
+
+    .booking-form-card{
+        padding:24px;
+    }
+
+    .booking-form-card h3{
+        font-size:26px;
+    }
+
+    .row{
+        grid-template-columns:1fr;
+        gap:16px;
+    }
+
+    .input-group input,
+    .input-group select,
+    .readonly-input{
+        height:54px;
+        font-size:15px;
+    }
+
+    .fare-card{
+        padding:24px;
+    }
+
+    .fare-card h3{
+        font-size:28px;
+    }
+
+    .summary-item span,
+    .summary-item strong{
+        font-size:15px;
+    }
+
+    .book-btn{
+        height:54px;
+        font-size:16px;
+    }
+
+}
+
+/* ===============================
+SMALL DEVICES
+===============================*/
+
+@media (max-width:480px){
+
+    .booking-section{
+        padding:40px 15px;
+    }
+
+    .booking-header h2{
+        font-size:26px;
+    }
+
+    .booking-tag{
+        font-size:11px;
+        padding:8px 16px;
+    }
+
+    .booking-form-card{
+        padding:18px;
+    }
+
+    .fare-card{
+        padding:18px;
+    }
+
+    .vehicle-grid{
+        grid-template-columns:1fr;
+    }
+
+}
