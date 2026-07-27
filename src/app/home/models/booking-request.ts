@@ -1,17 +1,25 @@
 export interface BookingRequest {
-  pickupAddress: string;
+  customerName: string;
+  mobileNumber: string;
+  email: string;
+
+  pickupLocation: string;
   pickupLatitude: number;
   pickupLongitude: number;
-  destinationAddress: string;
-  destinationLatitude: number;
-  destinationLongitude: number;
-  travelDate: string;
-  travelTime: string;
+
+  dropLocation: string;
+  dropLatitude: number;
+  dropLongitude: number;
+
+  vehicleId: string;
+
   tripType: string;
-  vehicleId: number;
-  vehicleName: string;
+
+  journeyDate: string;
+
   distance: number;
-  duration: number;
+
   estimatedFare: number;
-  passengers: number;
+
+  specialInstructions?: string;
 }

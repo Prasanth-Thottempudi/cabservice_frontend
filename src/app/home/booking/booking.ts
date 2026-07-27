@@ -39,6 +39,11 @@ export class Booking implements OnInit, OnDestroy {
   pickupQuery = '';
   destinationQuery = '';
 
+  customerName = 'Prasanth';
+  mobileNumber = '9876543210';
+  email = 'prasanth@gmail.com';
+  specialInstructions = '';
+
   pickupSuggestions: Location[] = [];
   destinationSuggestions: Location[] = [];
 
@@ -385,6 +390,8 @@ export class Booking implements OnInit, OnDestroy {
   }
 
   bookRide(): void {
+    console.log('Inside Book Ride');
+
     this.errors = {
       pickup: '',
       destination: '',
@@ -394,6 +401,7 @@ export class Booking implements OnInit, OnDestroy {
       vehicle: '',
       route: '',
     };
+
     this.bookingSuccessMessage = '';
     this.bookingErrorMessage = '';
 
@@ -425,27 +433,41 @@ export class Booking implements OnInit, OnDestroy {
       this.errors.route = 'Distance and duration must be calculated before booking.';
     }
 
-    if (Object.keys(this.errors).length > 0) {
+    // Correct validation
+    if (Object.values(this.errors).some((error) => error !== '')) {
+      console.log('Validation Failed', this.errors);
       return;
     }
 
     const bookingRequest: BookingRequest = {
-      pickupAddress: this.pickupSelected!.address,
+      customerName: 'Prasanth',
+      mobileNumber: '9876543210',
+      email: 'prasanth@gmail.com',
+      // pickupAddress: this.pickupSelected!.address,
       pickupLatitude: this.pickupSelected!.latitude,
       pickupLongitude: this.pickupSelected!.longitude,
-      destinationAddress: this.destinationSelected!.address,
-      destinationLatitude: this.destinationSelected!.latitude,
-      destinationLongitude: this.destinationSelected!.longitude,
-      travelDate: this.travelDate,
-      travelTime: this.travelTime,
+
+      // destinationAddress: this.destinationSelected!.address,
+      // destinationLatitude: this.destinationSelected!.latitude,
+      // destinationLongitude: this.destinationSelected!.longitude,
+      // travelDate: this.travelDate,
+      // travelTime: this.travelTime,
       tripType: this.tripType,
-      vehicleId: this.selectedVehicle!.id,
-      vehicleName: this.selectedVehicle!.name,
+
+      vehicleId: this.selectedVehicle!.vehicleNumber,
+      // vehicleName: this.selectedVehicle!.name,
       distance: this.displayDistance,
-      duration: this.displayDuration,
+      // duration: this.displayDuration,
       estimatedFare: this.estimatedFare,
-      passengers: this.passengers,
+      pickupLocation: '',
+      dropLocation: '',
+      dropLatitude: 0,
+      dropLongitude: 0,
+      journeyDate: '',
     };
+
+    console.log('Booking Request');
+    console.log(bookingRequest);
 
     this.bookingLoading = true;
 
@@ -454,12 +476,55 @@ export class Booking implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: BookingResponse) => {
+          console.log('Booking Success');
+          console.log(response);
+
           this.bookingLoading = false;
-          this.bookingSuccessMessage = response?.message ?? 'Booking Successful';
+          this.bookingSuccessMessage = response.message ?? 'Booking Successful';
+
+          // ===== WhatsApp Redirect =====
+          const whatsappNumber = '8897823543'; // Replace with your WhatsApp number
+
+          const message = `🚖 *Nova Cab Booking*
+
+Booking ID: ${response.bookingId}
+
+Customer: ${response.customerName}
+
+Mobile: ${response.mobileNumber}
+
+Pickup:
+${response.pickupLocation}
+
+Drop:
+${response.dropLocation}
+
+Trip Type:
+${response.tripType.replace('_', ' ')}
+
+Journey Date:
+${response.journeyDate}
+
+Distance:
+${response.distance} KM
+
+Estimated Fare:
+₹${response.estimatedFare}
+
+Status:
+${response.status}`;
+
+          const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+
+          window.open(whatsappUrl, '_blank');
         },
-        error: () => {
+        error: (error) => {
+          console.error('Booking Failed');
+          console.error(error);
+
           this.bookingLoading = false;
-          this.bookingErrorMessage = 'Unable to complete booking. Please try again later.';
+          this.bookingErrorMessage =
+            error?.error?.message ?? 'Unable to complete booking. Please try again later.';
         },
       });
   }

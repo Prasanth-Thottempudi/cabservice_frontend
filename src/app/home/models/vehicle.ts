@@ -1,4 +1,5 @@
 export interface Vehicle {
+  vehicleNumber: string;
   id: number;
 
   name: string;

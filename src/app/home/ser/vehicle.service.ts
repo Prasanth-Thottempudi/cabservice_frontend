@@ -9,6 +9,7 @@ export class VehicleService {
   private readonly vehicles: Vehicle[] = [
     {
       id: 1,
+      vehicleNumber: 'VEH001',
       name: 'Sedan Classic',
       image: 'assets/images/dezire.avif',
       capacity: 4,
@@ -20,6 +21,7 @@ export class VehicleService {
     },
     {
       id: 2,
+      vehicleNumber: 'VEH002',
       name: 'Premium SUV',
       image: 'assets/images/dezire.avif',
       capacity: 6,
@@ -31,6 +33,7 @@ export class VehicleService {
     },
     {
       id: 3,
+      vehicleNumber: 'VEH003',
       name: 'Luxury Sedan',
       image: 'assets/images/dezire.avif',
       capacity: 4,
@@ -41,6 +44,8 @@ export class VehicleService {
       airportCharge: 200,
     },
   ];
+
+  constructor() {}
 
   getVehicles(): Observable<Vehicle[]> {
     return of(this.vehicles);

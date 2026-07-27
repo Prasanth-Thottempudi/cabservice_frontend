@@ -4,16 +4,17 @@ import { Observable } from 'rxjs';
 
 import { BookingRequest } from '../models/booking-request';
 import { BookingResponse } from '../models/booking-response';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BookingService {
-  private baseUrl = 'http://localhost:8080/api';
+  private baseUrl = `${environment.apiUrl}/bookings`;
 
   constructor(private http: HttpClient) {}
 
   bookRide(request: BookingRequest): Observable<BookingResponse> {
-    return this.http.post<BookingResponse>(`${this.baseUrl}/bookings`, request);
+    return this.http.post<BookingResponse>(this.baseUrl, request);
   }
 }
